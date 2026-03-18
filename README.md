@@ -2,6 +2,10 @@
 
 Turn **SuperGrok** into a REST API + CLI tool. No API key needed.
 
+## Chrome
+
+[chrome](./chrome.md)
+
 ## How it works
 
 ```
