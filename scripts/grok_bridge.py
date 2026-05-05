@@ -23,8 +23,12 @@ GROK_URL='https://grok.com'
 VERSION='v1'
 # 多种输入框选择器（grok.com 可能更新 UI）
 INPUT_SELECTORS=['textarea','div[contenteditable="true"]','[data-testid="text-input"]','[role="textbox"]']
-# 发送按钮选择器
-SEND_SELECTORS=['button[aria-label="Send"]','button[data-testid="send-button"]']
+# 发送按钮选择器（支持中英文，防止 grok.com UI 更新导致按钮无法点击）
+SEND_SELECTORS=[
+    'button[aria-label="Send"]',
+    'button[aria-label="提交"]',
+    'button[data-testid="send-button"]'
+]
 
 class GrokBridge:
     def __init__(s):s.lock=threading.Lock()
@@ -78,8 +82,8 @@ class GrokBridge:
         for btn_sel in SEND_SELECTORS:
             r=s._js(f"(()=>{{const b=document.querySelector('{btn_sel}');if(b&&!b.disabled){{b.click();return'OK'}};return'NO'}})()")
             if 'OK' in str(r):return True
-        # Fallback: find button with Send/Submit text
-        r=s._js("""(()=>{const bs=[...document.querySelectorAll('button')];const b=bs.find(x=>/send|发送|submit/i.test(x.textContent||x.ariaLabel||''));if(b&&!b.disabled){b.click();return'OK'}return'NO'})()""")
+        # Fallback: find button with Send/Submit text (support Chinese)
+        r=s._js("""(()=>{const bs=[...document.querySelectorAll('button')];const b=bs.find(x=>/send|发送|提交|submit/i.test(x.textContent||x.ariaLabel||''));if(b&&!b.disabled){b.click();return'OK'}return'NO'})()""")
         if 'OK' in str(r):return True
         # Last resort: dispatch Enter KeyboardEvent on the input
         s._js(f"document.querySelector('{input_sel}')?.dispatchEvent(new KeyboardEvent('keydown',{{key:'Enter',code:'Enter',keyCode:13,bubbles:true}}))")
